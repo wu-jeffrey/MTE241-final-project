@@ -14,7 +14,6 @@ void putPixel(int x, int y, unsigned int short color) {
 	}
 }
 
-
 void drawBorder() {
 	GLCD_SetTextColor(Blue);
 	// Draw Horizontal Lines with width of 3 px
@@ -26,7 +25,7 @@ void drawBorder() {
 			GLCD_PutPixel(i_x, j_yright);
 		}
 	}
-	
+
 	// Draw Vertical Lines with width of 3 px
 	for(int i_y = 5; i_y < 235; i_y++){
 		for(int j_xleft = 5; j_xleft < 8; j_xleft++){
@@ -44,4 +43,11 @@ void drawSnakeBody(node_t* start) {
 		putPixel(current_node->x, current_node->y, Green);
 		current_node = current_node->next;
 	}
+}
+
+void drawStaticScreen() {
+  GLCD_Clear(white);
+	char buffer[50];
+	sprintf(buffer, "Game Over");
+	GLCD_DisplayString(4, 4, 1, (unsigned char *)buffer);
 }

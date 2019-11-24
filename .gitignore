@@ -1,3 +1,5 @@
 *.TMP
 /Objects
 /DebugConfig
+*.map
+/Listings

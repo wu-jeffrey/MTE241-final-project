@@ -3,19 +3,21 @@
 #include <stdio.h>
 #include <stdbool.h> 
 #include <Math.h>
-#include "GLCD.h"
 #include <cmsis_os2.h>
-#include <time.h>
 
+#include "GLCD.h"
 #include "game_logic.h"
-#include "GLCD_render.h"
 
 // Mutexes to synchronize tasks
 osMutexId_t mutex;
-/*******************************************************************************
-* Main
-*******************************************************************************/
-void renderThread() {
+osThreadId_t T1, T2, T3;
+
+void gameOver
+
+
+
+
+void render() {
 	while(1) {
 		osMutexAcquire(mutex, osWaitForever);
 		for(int i = 0; i < 1000000; i++); // TODO: increase delay as level increases
@@ -24,13 +26,11 @@ void renderThread() {
 		moveSnakeHead();
 		
 		if (collisionDetected()) {
-			printf("Game Over");
-		} 
-	
-		if (appleEaten()) {
-			putApple();
+			gameOver();
+		} else if (appleEaten()) {
 			// Snake Body/Tail is the rest of the pixels
 			moveSnakeBody(true);
+			putApple();
 		} else {
 			moveSnakeBody(false);
 		}
@@ -40,7 +40,7 @@ void renderThread() {
 	}
 }
 
-void joystickOutputThread() {
+void getJoyStickInput() {
     while(1) {
       osMutexAcquire(mutex, osWaitForever);
       int input = LPC_GPIO1->FIOPIN;
@@ -60,13 +60,12 @@ void joystickOutputThread() {
     }
 }
 
-void waitForButton() {
+void getButtonInput() {
   while(1) {
     osMutexAcquire(mutex, osWaitForever);
     if(!((LPC_GPIO2->FIOPIN >> 10) & 1)){
       osDelay(150);
       int keepLoop = 1;
-      printf("Poll works");
       while(keepLoop) {
         if(!((LPC_GPIO2->FIOPIN >> 10) & 1)){
           osDelay(150);
@@ -74,9 +73,9 @@ void waitForButton() {
         } 
       }
     }
+
     osMutexRelease(mutex);
     osThreadYield();
-
   }
 }
 
@@ -88,9 +87,9 @@ int main(void) {
 	mutex = osMutexNew(NULL);
 	
 	osKernelInitialize();
-	osThreadNew(joystickOutputThread, NULL, NULL);
-	osThreadNew(renderThread, NULL, NULL);
-	osThreadNew(waitForButton, NULL, NULL);
+	T1 = osThreadNew(getJoyStickInput, NULL, NULL);
+	T2 = osThreadNew(render, NULL, NULL);
+	T3 = osThreadNew(getButtonInput, NULL, NULL);
 
 	osKernelStart();
 	for( ; ; ){}

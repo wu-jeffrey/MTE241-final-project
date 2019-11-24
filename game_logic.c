@@ -6,35 +6,29 @@
 #include "GLCD_render.h"
 #include "game_logic.h"
 #include "linked_list.h"
-#include <cmsis_os2.h>
 
-// Declare Stuff
+/*******************************************************************************
+* Internal State Variables
+*******************************************************************************/
 const int PIXEL_DIM = 10;
 
 int tail_sz = 6;
-
-// Declare Linked List
-node_t* a;
-node_t* b;
-node_t* c;
-node_t* d;
-node_t* e;
-node_t* f;
 linked_list_t tail;
 
 // Define initial apple coordinates
 int apple_x = 100;
 int apple_y = 100;
-
 // Initial Position
 int px = 160;
 int py = 120;
-
 // Initial Velocity
 int vx = PIXEL_DIM;
 int vy = 0;
 
 
+/*******************************************************************************
+* Snake Movement Logic
+*******************************************************************************/
 void setVelocity(char direction) {	
 	switch (direction) {
 		case 'R':
@@ -67,58 +61,11 @@ void setVelocity(char direction) {
 	}
 }
 
-coordinate_t generateApplePosition() {
-  // Generate a random value b/w the border dimensions
-  int x_coord = rand() % 300;
-  int y_coord = rand() % 230;
-
-  // Round it down to the nearest 10
-	coordinate_t c = {
-		.x = x_coord - x_coord % PIXEL_DIM,
-		.y = y_coord - y_coord % PIXEL_DIM
-	};
-	
-	return c;
-}
-
-bool checkTailForApple() {
-	bool existsInTail = false;
-  node_t* node = tail.start;
-	
-  while (node != NULL){
-    if (apple_x == node->x && apple_y == node->y) {
-      existsInTail = true;
-			break;
-    }
-    node = node->next;
-  }
-	return existsInTail;
-}
-
-void putApple() {
-	coordinate_t apple;
-	
-	// Ensure Apple does not spawn on snake's head or body/tail
-	do {
-		apple = generateApplePosition();	
-	} while (apple.x == px && apple.y == py && checkTailForApple());
-
-	// Set global position
-	apple_x = apple.x;
-	apple_y = apple.y;
-	
-	putPixel(apple_x, apple_y, Red);
-}
-
-/*******************************************************************************
-* Gameplay Logic
-*******************************************************************************/
 void moveSnakeHead() {
-	px+=vx; // make position and velocities globals
-	py+=vy;
+	px += vx;
+	py += vy;
 	putPixel(px, py, Green);
 }
-
 
 void moveSnakeBody(bool grow) {
 	node_t* new_p = (node_t*) malloc(sizeof(node_t));
@@ -126,7 +73,7 @@ void moveSnakeBody(bool grow) {
 	new_p->y = py;
 	pushFront(&tail, new_p);
 
-	drawSnake(tail.start);
+	drawSnakeBody(tail.start);
 	
 	if (grow) {
 		tail_sz++;
@@ -157,22 +104,70 @@ bool collisionDetected() {
 }
 
 
+/*******************************************************************************
+* Apple Spawning Logic
+*******************************************************************************/
+coordinate_t generateApplePosition() {
+  // Generate a random value b/w the border dimensions
+  int x_coord = rand() % 300;
+  int y_coord = rand() % 230;
+
+  // Round it down to the nearest 10
+	coordinate_t c = {
+		.x = x_coord - x_coord % PIXEL_DIM,
+		.y = y_coord - y_coord % PIXEL_DIM
+	};
+	
+	return c;
+}
+
+bool checkTailForApple(coordinate_t apple_pos) {
+	bool existsInTail = false;
+  node_t* node = tail.start;
+	
+  while (node != NULL){
+    if (apple_pos.x == node->x && apple_pos.y == node->y) {
+      existsInTail = true;
+			break;
+    }
+    node = node->next;
+  }
+	return existsInTail;
+}
+
+void putApple() {
+	coordinate_t apple;
+	
+	do { // Ensure Apple does not spawn on snake's head or body/tail
+		apple = generateApplePosition();	
+	} while (apple.x == px && apple.y == py && checkTailForApple(apple));
+
+	// Set global position
+	apple_x = apple.x;
+	apple_y = apple.y;
+	
+	putPixel(apple_x, apple_y, Red);
+}
+
 bool appleEaten() {
 	return px == apple_x && py == apple_y;
 }
 
 
+/*******************************************************************************
+* Game States
+*******************************************************************************/
 void initGameLogic() {
 	GLCD_Init();
 	GLCD_Clear(Black);
 	
 	// Assign nodes to initial snake tail
-	a = (node_t*) malloc(sizeof(node_t));
-	b = (node_t*) malloc(sizeof(node_t));
-	c = (node_t*) malloc(sizeof(node_t));
-	d = (node_t*) malloc(sizeof(node_t));
-	e = (node_t*) malloc(sizeof(node_t));
-	f = (node_t*) malloc(sizeof(node_t));
+	node_t*	a = (node_t*) malloc(sizeof(node_t));
+	node_t*	b = (node_t*) malloc(sizeof(node_t));
+	node_t*	c = (node_t*) malloc(sizeof(node_t));
+	node_t*	d = (node_t*) malloc(sizeof(node_t));
+	node_t*	e = (node_t*) malloc(sizeof(node_t));
+	node_t*	f = (node_t*) malloc(sizeof(node_t));
 
 	a->x = 160;
 	a->y = 120;
@@ -201,8 +196,12 @@ void initGameLogic() {
 	pushEnd(&tail, f);
 	
 	// Initial Render
-	putApple();
+	putApple(); // Spawn First Apple
 	drawBorder();
 	putPixel(px, py, Green); // Draw Snakehead
 	drawSnakeBody(tail.start); // Draw Snake tail/body
 }
+
+// void gameOver() {
+//   drawStaticScreen();
+// }
