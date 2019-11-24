@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h> 
+#include <stdbool.h>
+#include <Math.h>
 
 #include "GLCD.h"
 #include "GLCD_render.h"
@@ -19,6 +20,15 @@ linked_list_t tail;
 int apple_x, apple_y;
 // Position and Velocity
 int px, py, vx, vy;
+
+
+
+/*******************************************************************************
+* Helpers
+*******************************************************************************/
+bool withinTolerance(int a, int b, int tolerance) {
+	return abs(a - b) < tolerance;
+}
 
 
 /*******************************************************************************
@@ -91,7 +101,7 @@ bool collisionDetected() {
 	}
 	
 	// Detect wall collision
-	if (px == 320 || py == 240) {
+	if (px <= 0 || py <= PIXEL_DIM || px >= (320 - PIXEL_DIM) || py >= 240) {
 		collision = true;
 	}
 	
@@ -104,13 +114,16 @@ bool collisionDetected() {
 *******************************************************************************/
 coordinate_t generateApplePosition() {
   // Generate a random value b/w the border dimensions
-  int x_coord = rand() % 300;
-  int y_coord = rand() % 230;
+  int x_coord = rand() % (320-PIXEL_DIM)/10;
+  int y_coord = rand() % (240-PIXEL_DIM)/10;
 
-  // Round it down to the nearest 10
+	// Border correction
+	if (x_coord == 0) { x_coord = 1; }
+	if (y_coord < 2) { y_coord = 2; }
+
 	coordinate_t c = {
-		.x = x_coord - x_coord % PIXEL_DIM,
-		.y = y_coord - y_coord % PIXEL_DIM
+		.x = x_coord * PIXEL_DIM,
+		.y = y_coord * PIXEL_DIM
 	};
 	
 	return c;
@@ -121,7 +134,10 @@ bool checkTailForApple(coordinate_t apple_pos) {
   node_t* node = tail.start;
 	
   while (node != NULL){
-    if (apple_pos.x == node->x && apple_pos.y == node->y) {
+    if (
+			withinTolerance(apple_pos.x, node->x, PIXEL_DIM) &&
+			withinTolerance(apple_pos.y, node->y, PIXEL_DIM)
+		) {
       existsInTail = true;
 			break;
     }

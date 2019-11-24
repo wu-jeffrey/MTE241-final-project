@@ -21,9 +21,10 @@ void staticScreen() {
 		osMutexAcquire(mutex, osWaitForever);
 		if (game_over) {
 			gameOver();
-			while ((LPC_GPIO2->FIOPIN >> 10) & 1) {}
+			while (!buttonPressed()) {}
 			game_over = false;
 			score = 0;
+			prev_score = 0;
 			pollrate = 1000000;
 			initGameLogic();
 		}
@@ -62,6 +63,7 @@ void displayScore() {
 		if ( !(score % 9) && (prev_score != score) ) {
 			pollrate /= 5;
 		}
+		// printf("pollrate: %d\n", pollrate);
 		prev_score = score;
 		displayScoreWithLed(score);
 		osMutexRelease(mutex);
@@ -81,13 +83,13 @@ void getJoyStickInput() {
 void getButtonInput() {
   while(1) {
     osMutexAcquire(mutex, osWaitForever);
-		if (!((LPC_GPIO2->FIOPIN >> 10) & 1)) {
-			osDelay(150);
-			int keepLoop = 1;
+		if (buttonPressed()) {
+			while(buttonPressed()) {}
+			bool keepLoop = true;
 			while(keepLoop) {
-				if (!((LPC_GPIO2->FIOPIN >> 10) & 1)) {
-					osDelay(150);
-					keepLoop = 0;
+				if (buttonPressed()) {
+					while(buttonPressed()) {}
+					keepLoop = false;
 				} 
 			}
 		}
