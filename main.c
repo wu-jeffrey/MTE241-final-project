@@ -14,7 +14,8 @@ osMutexId_t mutex;
 osThreadId_t T1, T2, T3, T4, T5;
 bool game_over = false;
 int score = 0;
-
+int prev_score = 0;
+int pollrate = 1000000;
 void staticScreen() {
 	while (true) {
 		osMutexAcquire(mutex, osWaitForever);
@@ -23,6 +24,7 @@ void staticScreen() {
 			while ((LPC_GPIO2->FIOPIN >> 10) & 1) {}
 			game_over = false;
 			score = 0;
+			pollrate = 1000000;
 			initGameLogic();
 		}
 
@@ -34,7 +36,7 @@ void staticScreen() {
 void render() {
 	while(1) {
 		osMutexAcquire(mutex, osWaitForever);
-		for(int i = 0; i < 1000000; i++); // TODO: increase delay as level increases
+		for(int i = 0; i < pollrate; i++); // TODO: increase delay as level increases
 		
 		// Snake Head is one pixel
 		moveSnakeHead();
@@ -57,6 +59,10 @@ void render() {
 void displayScore() {
 	while(1) {
 		osMutexAcquire(mutex, osWaitForever);
+		if ( !(score % 9) && (prev_score != score) ) {
+			pollrate /= 5;
+		}
+		prev_score = score;
 		displayScoreWithLed(score);
 		osMutexRelease(mutex);
 		osThreadYield();
