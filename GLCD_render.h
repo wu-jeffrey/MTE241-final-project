@@ -11,3 +11,4 @@ void drawSnakeBody(node_t* start);
 void drawStaticScreen();
 
 #endif
+

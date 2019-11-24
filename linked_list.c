@@ -45,5 +45,15 @@ void pushEnd(linked_list_t* list, node_t* node) {
 }
 
 void clearList(linked_list_t* list) {
+  node_t* tmp;
+  node_t* node = list->start;
 
+  while (node != NULL) {
+    tmp = node;
+    node = node->next;
+    free(tmp);
+  }
+
+  list->start = NULL;
+  list->end = NULL;
 }

@@ -46,8 +46,16 @@ void drawSnakeBody(node_t* start) {
 }
 
 void drawStaticScreen() {
-  GLCD_Clear(white);
+  GLCD_Clear(White);
+	GLCD_SetTextColor(Black);
 	char buffer[50];
+
 	sprintf(buffer, "Game Over");
-	GLCD_DisplayString(4, 4, 1, (unsigned char *)buffer);
+	GLCD_DisplayString(4, 4, 1, (unsigned char *)buffer);\
+
+	sprintf(buffer, "Press Button");
+	GLCD_DisplayString(6, 4, 1, (unsigned char *)buffer);
+
+		sprintf(buffer, "To play again");
+	GLCD_DisplayString(7, 4, 1, (unsigned char *)buffer);
 }

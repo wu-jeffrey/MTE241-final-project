@@ -15,15 +15,10 @@ const int PIXEL_DIM = 10;
 int tail_sz = 6;
 linked_list_t tail;
 
-// Define initial apple coordinates
-int apple_x = 100;
-int apple_y = 100;
-// Initial Position
-int px = 160;
-int py = 120;
-// Initial Velocity
-int vx = PIXEL_DIM;
-int vy = 0;
+// Apple coordinates
+int apple_x, apple_y;
+// Position and Velocity
+int px, py, vx, vy;
 
 
 /*******************************************************************************
@@ -158,9 +153,20 @@ bool appleEaten() {
 * Game States
 *******************************************************************************/
 void initGameLogic() {
-	GLCD_Init();
 	GLCD_Clear(Black);
+
+	// Empties Linked List
+	clearList(&tail);
 	
+	// Initial Position
+	apple_x = 100;
+	apple_y = 100;
+	px = 160;
+	py = 120;
+	vx = PIXEL_DIM;
+	vy = 0;
+	tail_sz = 6;
+
 	// Assign nodes to initial snake tail
 	node_t*	a = (node_t*) malloc(sizeof(node_t));
 	node_t*	b = (node_t*) malloc(sizeof(node_t));
@@ -202,6 +208,6 @@ void initGameLogic() {
 	drawSnakeBody(tail.start); // Draw Snake tail/body
 }
 
-// void gameOver() {
-//   drawStaticScreen();
-// }
+void gameOver() {
+  drawStaticScreen();
+}

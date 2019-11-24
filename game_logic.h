@@ -18,6 +18,6 @@ void putApple();
 bool appleEaten();
 
 void initGameLogic();
-// void gameOver();
+void gameOver();
 
 #endif
